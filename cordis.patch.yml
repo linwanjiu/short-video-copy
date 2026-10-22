@@ -1,0 +1,15 @@
+# 往 profile 里插一行宿主插件，挂载后由 lib/index.js 注册技能 provider。
+#
+# 安装：
+#   dsh plugin --profile web add github:linwanjiu/short-video-copy
+#
+# 本地开发：
+#   dsh plugin --profile web add "link:D:\work\short-video-copy"
+#
+# 卸载：
+#   dsh plugin --profile web remove @linwanjiu/short-video-copy
+#
+# 下面 insert 的 `name:` 必须与安装后的包名完全一致。
+- insert:
+    - id: short-video-copy
+      name: "@linwanjiu/short-video-copy"

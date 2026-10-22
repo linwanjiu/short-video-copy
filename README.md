@@ -2,54 +2,51 @@
 
 把一句话选题写成短视频文案：**钩子 + 口播稿 + 分镜表 + 发布文案**。
 
-一个独立的技能，不依赖任何其他项目。可选输出一份 `content.json`，如果你有视频流水线，可以直接拿去出片。
+按「平台 · 品类 · 调性」预设组合，时长按语速算出来，不靠估。
+
+## 一行安装
+
+```bash
+npx -y linwanjiu/short-video-copy
+```
+
+Windows PowerShell（网络正常）：
+
+```powershell
+irm https://raw.githubusercontent.com/linwanjiu/short-video-copy/main/install.ps1 | iex
+```
+
+国内网络（GitHub 直连不稳时）：
+
+```powershell
+irm https://ghproxy.net/https://raw.githubusercontent.com/linwanjiu/short-video-copy/main/install.ps1 | iex
+```
+
+作为 DSH 插件安装（技能随包走，不落盘）：
+
+```bash
+dsh plugin --profile web add github:linwanjiu/short-video-copy
+```
+
+> 安装器会保留你已有的 `profile.md`，不会覆盖你的设置。要强制覆盖加 `--force`。
 
 ## 它解决什么问题
 
-大多数“AI 写文案”只解决**说什么**，不解决**说多久**。
+大多数"AI 写文案"只解决**说什么**，不解决**说多久**。
 
 这个技能把两件事一起管：
 
 1. **结构** —— 平台决定节奏，品类决定骨架，调性决定句式，钩子决定前 3 秒
-2. **时间** —— 时长是按字数算出来的，不是拍脑袋分的
+2. **时间** —— 时长按字数算，不是拍脑袋分
 
-第 2 点是它和普通文案 prompt 最大的区别：口播稿的每一行都带字数和秒数，分镜时间直接从口播表复制，不算第二遍。
-
-## 结构
-
-```
-SKILL.md                引擎：四个预设怎么叠、输出什么、怎么自检
-profile.md              当前选择 ← 只改这个
-presets/
-  hooks.md              8 类钩子，每类 5–7 条中文公式
-  tones.md              5 档调性：句长 / 动词 / 距离 / 禁用词
-  platforms.md          抖音 / 小红书 / 视频号 / B站 的节奏、语速、CTA、坑
-  categories.md         通用 / 科普 / 带货 / 个人IP / 剧情 / 口播 的段落占比
-  timing.md             计时模型：公式、语速表、容量反推、镜头时长约束
-references/
-  analysis.md           拆解模式：给一条参考视频，输出 hook / 结构 / 改写方向
-scripts/
-  timing.mjs            输入台词，直接输出带字数的计时表
-examples/
-  demo-sleep.md         完整示例，含 30 秒成稿
-CREDITS.md              借用了哪些开源项目
-```
-
-## 安装
-
-```powershell
-# 复制到 DSH 的用户技能目录
-Copy-Item . "$env:USERPROFILE\.dsh\skills\short-video-copy" -Recurse
-```
-
-新会话里说“写个短视频文案”“帮我写口播稿”，技能就会触发。
+第 2 点是它和普通文案 prompt 最大的区别：口播稿每行带字数和秒数，分镜时间直接复制，不算第二遍。
 
 ## 怎么用
 
-默认流程是**先出稿、再收参数**，不让你面对一串空问题：
+默认流程是**先出稿、再收参数**：
 
 ```
-你：给个想法（一句话）
+你给一句话想法
  ↓
 第一版：通用稿（口播 + 分镜 + 发布文案，带计时）
  ↓
@@ -69,7 +66,30 @@ Copy-Item . "$env:USERPROFILE\.dsh\skills\short-video-copy" -Recurse
 | 3 | 结构 | 口播三段 / 科普 / 故事 / 剧情 |
 | 4 | 反转与钩子 | 不加 / 中段转折 / 结尾反转 / 双钩子 |
 
-如果你一次就把平台和调性说清了，会跳过问卷直接出定向稿。
+如果一次就把平台和调性说清了，会跳过问卷直接出定向稿。
+
+## 结构
+
+```
+skills/short-video-copy/    技能本体（插件与安装器都发这个目录）
+  SKILL.md                  引擎：四个预设怎么叠、输出什么、怎么自检
+  profile.md                当前选择 ← 只改这个
+  presets/
+    hooks.md                8 类钩子，每类 5–7 条中文公式
+    tones.md                5 档调性：句长 / 动词 / 距离 / 禁用词
+    platforms.md            抖音 / 小红书 / 视频号 / B站
+    categories.md           通用 / 科普 / 带货 / 个人IP / 剧情 / 口播
+    timing.md               计时模型：公式、语速表、容量反推
+  references/analysis.md    拆解模式：分析参考视频并给改写方向
+  scripts/timing.mjs        输入台词，输出带字数的计时表
+  examples/demo-sleep.md    完整示例
+
+lib/                        插件入口：向 ctx.skills 注册技能 provider
+bin/install.mjs             安装器（复制技能到 ~/.dsh/skills）
+install.ps1                 Windows 一行安装
+cordis.patch.yml            插件补丁
+test/plugin.test.mjs        插件接口自测
+```
 
 ## 怎么调风格
 
@@ -86,7 +106,8 @@ cta: 关注
 banned: 赋能, 闭环, 抓手, 颗粒度
 ```
 
-改一行换一种风格，方法论不动。
+**临时改**：说"这版改成小红书"，只改这一版，不动文件。
+**永久改**：说"以后都用小红书"，写进 `profile.md` 并在改动记录里留一行。
 
 ## 计时怎么算
 
@@ -94,42 +115,26 @@ banned: 赋能, 闭环, 抓手, 颗粒度
 单句时长 = 字数 / 语速 + 0.2 × 逗号数 + 0.35 × 句号数
 ```
 
-语速按平台取：抖音 4.5 字/秒、小红书 3.8、视频号 3.5、B站 4.2。
+语速：抖音 4.5 字/秒、小红书 3.8、视频号 3.5、B站 4.2。
 
-先按容量表控制总字数（15 秒抖音约 55 字），再逐句累加时间。**顺序反了必然超时。**
+先按容量表控制总字数（15 秒抖音约 55 字），再逐句累加。**顺序反了必然超时。**
 
 可以直接跑：
 
 ```bash
-node scripts/timing.mjs --rate 4.5 "你越补觉，越累。" "欠的不是时间，是节奏。"
+node skills/short-video-copy/scripts/timing.mjs --rate 4.5 "你越补觉，越累。" "欠的不是时间，是节奏。"
 ```
-
-## 输出什么
-
-1. **口播稿** —— 带时间、字数、秒数三列
-2. **分镜表** —— 时间从口播表复制；拆镜头写 `1a/1b`，相加须等于原句
-3. **content.json** —— 可选，给视频流水线用
-4. **发布文案** —— 标题 + 标签 + 评论区引导
 
 ## 边界
 
-- 不编数据。用户没给数字就用可验证的模糊量，或者直接问。
+- 不编数据。没给数字就用可验证的模糊量，或者直接问。
 - 医疗、金融、教育类不写具体效果承诺。
 - 不用绝对化用语（最、第一、根治、百分百）。
 
-## 来源
+## 来源与许可证
 
-钩子公式结构、拆解流程、平台差异分别参考了几个 MIT 项目，详见 [CREDITS.md](CREDITS.md)。中文公式、五档调性、品类结构、计时模型为原创整理。
+钩子公式结构、拆解流程、平台差异分别改编自三个 **MIT** 项目，版权行与许可证全文见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)，简短版见 [CREDITS.md](CREDITS.md)。
 
-## 为什么单独成项目
+⚠️ 其中还有一个被间接引用的上游仓库**没有声明许可证**，本项目未使用其内容，具体说明也在 `THIRD-PARTY-NOTICES.md` 里。
 
-文案和画面是两件事：
-
-- 文案决定**说什么**，节奏是秒级的
-- 画面决定**怎么呈现**，是工程问题
-
-绑在一起，改文案要动渲染代码，改版式要重写文案。分开之后，文案可以单独迭代，也可以喂给任何工具——包括但不限于 Remotion 那套流水线。
-
-## 许可证
-
-MIT。
+本项目自身：MIT。
