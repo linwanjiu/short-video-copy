@@ -145,26 +145,38 @@ node scripts/timing.mjs --rate 4.5 "你越补觉，越累。" "欠的不是时�
 
 画面只写**能拍出来的东西**。不要"有氛围感的空镜"。
 
-### 3.3 content.json（可选）
+### 3.3 content.json（可选，给视频流水线）
 
-只有用户明确有视频流水线时才输出。字段：
+结构是 `scenes` 数组，类型、上限、映射规则见 `presets/scenes.md`。
 
 ```json
 {
-  "kicker": "≤16 字",
-  "title": "≤10 字",
-  "titleNote": "≤18 字",
-  "chips": ["4 个关键词，每个 ≤4 字"],
-  "statement": "≤9 字",
-  "statementNote": "≤20 字",
-  "stats": [{ "value": 数字, "suffix": "s/+/%", "label": "≤6 字" }],
-  "outroKicker": "≤8 字",
-  "outroTitle": "≤5 字",
-  "outroNote": "≤20 字"
+  "style": "simple",
+  "title": "≤12 字（用于草稿命名）",
+  "scenes": [
+    { "type": "title", "kicker": "≤16 字", "text": "≤10 字", "note": "≤18 字" },
+    { "type": "point", "text": "≤12 字", "note": "≤20 字" },
+    { "type": "stat",  "items": [{ "value": 15, "suffix": "s", "label": "≤6 字" }] },
+    { "type": "quote", "text": "≤12 字", "note": "≤20 字" },
+    { "type": "outro", "kicker": "≤8 字", "text": "≤5 字", "note": "≤20 字" }
+  ]
 }
 ```
 
-`stats` 必须来自文案里真实出现的数字，凑不出就写 2 张。
+硬规则：
+
+1. **一场景一句话**。超过 12 字就在逗号处拆成两个 `point`，不要指望视频侧帮你压
+2. 12 字带标点 ≈ 3.4 秒，已经是单镜头上限。再多，视频侧会压字号，画面就难看了
+3. `stat` 的数字必须来自正文。凑不出就 2 张，别硬凑
+4. 段数：15 秒 5–8 段，30 秒 8–14 段。段数就是剪辑的颗粒度
+5. 首段必须是 `title`，末段必须是 `outro`
+6. 写完**必须**跑校验，不通过不要交给视频侧：
+
+```bash
+node scripts/check-scenes.mjs content.json
+```
+
+校验会报：类型非法、字数超限、数据卡超过 3 张、首尾场景缺失、估算时长越界。
 
 ### 3.4 发布文案
 
@@ -210,6 +222,8 @@ cd <video-studio>
 - [ ] 无绝对化用语（最/第一/根治/百分百）
 - [ ] 医疗、金融、教育类没有效果承诺
 - [ ] 命中 `banned` 里的词？命中就重写那句
+- [ ] **要出片时**：`scenes` 每段 ≤ 12 字，首段 title、末段 outro
+- [ ] **要出片时**：`node scripts/check-scenes.mjs content.json` 通过
 
 ---
 
