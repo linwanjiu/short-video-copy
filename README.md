@@ -1,6 +1,6 @@
 # short-video-copy
 
-把一句话选题写成短视频文案：**钩子 + 口播稿 + 分镜表 + 发布文案**。
+把一句话选题写成短视频文案。**默认只给文案和发布文案**，分镜表等你说了再给。
 
 按「平台 · 品类 · 调性」预设组合，时长按语速算出来，不靠估。
 
@@ -80,10 +80,9 @@ skills/short-video-copy/    技能本体（插件与安装器都发这个目录�
     platforms.md            抖音 / 小红书 / 视频号 / B站
     categories.md           通用 / 科普 / 带货 / 个人IP / 剧情 / 口播
     timing.md               计时模型：公式、语速表、容量反推
-    scenes.md               场景库：5 种类型、字数上限、从文案映射到 scenes
+    punctuation.md          全角标点、断句、数字格式、常见反例
   references/analysis.md    拆解模式：分析参考视频并给改写方向
   scripts/timing.mjs        输入台词，输出带字数的计时表
-  scripts/check-scenes.mjs  校验 content.json 是否符合视频侧约定
   examples/demo-sleep.md    完整示例
 
 lib/                        插件入口：向 ctx.skills 注册技能 provider
@@ -126,32 +125,6 @@ banned: 赋能, 闭环, 抓手, 颗粒度
 ```bash
 node skills/short-video-copy/scripts/timing.mjs --rate 4.5 "你越补觉，越累。" "欠的不是时间，是节奏。"
 ```
-
-## 交给视频流水线：输出 scenes
-
-要出片时，把文案转成 `content.json` 的 `scenes` 数组（不是口播稿直接丢过去）：
-
-```json
-{
-  "style": "simple",
-  "title": "越补觉越累",
-  "scenes": [
-    { "type": "title", "kicker": "睡眠债的真相", "text": "越补觉，越累", "note": "你欠的不是时间" },
-    { "type": "point", "text": "睡不够，欠的不是时间，是节奏" },
-    { "type": "stat",  "items": [{ "value": 8, "suffix": "h", "label": "常被误读" }] },
-    { "type": "quote", "text": "同一时间醒，才算睡够" },
-    { "type": "outro", "kicker": "这周先做", "text": "改起床", "note": "关注我" }
-  ]
-}
-```
-
-三种类型五种版式、各自字数上限、映射规则见 `presets/scenes.md`。三条硬约束：
-
-1. **一场景一句话，≤ 12 字**。12 字带标点 ≈ 3.4 秒，已到单镜头上限
-2. 首段 `title`，末段 `outro`
-3. 写完跑 `node scripts/check-scenes.mjs content.json`，不通过别交出去
-
-校验器会报类型非法、字数超限、数据卡过多、首尾缺失、时长越界。
 
 ## 边界
 
